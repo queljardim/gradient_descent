@@ -29,8 +29,13 @@ def grad_descent(step_fn, env):
     the starting position) visited during the gradient descent. 
     
     """
-    # Question ONE
-    pass
+    positions = [env.curr_pos]
+    while env.can_see_exit(env.current_position()) != True:
+        step_to_take = step_fn(env.current_position())
+        new_pos = step_to_take + env.current_position() 
+        positions.append(new_pos)
+        env.step_to(new_pos)
+    return positions
 
 
 def momentum_grad_descent(rate, env):
@@ -41,6 +46,7 @@ def momentum_grad_descent(rate, env):
     (a stub implementation is found below, fill in the code).
     
     """
+
     return grad_descent(MomentumStepFunction(env.gradient, rate, 0.3), env)
 
 
@@ -53,14 +59,17 @@ class MomentumStepFunction:
     that gradient descent with momentum would take (also expressed as a
     2-dimensional torch.tensor).
         
-    """    
+    """
     def __init__(self, loss_gradient, learning_rate, momentum_rate):
-        # Question TWO
-        pass
+        self.loss_gradient = loss_gradient
+        self.learning_rate = learning_rate
+        self.momentum_rate = momentum_rate
+        self.previous_step = torch.zeros(2) #initialize as empty tensor
         
     def __call__(self, pos):
-        # Question TWO
-        pass
+        curr_grad = self.loss_gradient(pos)
+        self.previous_step = (- self.learning_rate * curr_grad) + (self.momentum_rate * self.previous_step) ## (alpha * derivative) + (momentum)
+        return self.previous_step
 
 
 def adagrad(rate, env):
