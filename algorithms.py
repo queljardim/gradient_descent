@@ -102,7 +102,7 @@ class AdagradStepFunction:
     def __call__(self, pos):
         curr_grad = self.loss_gradient(pos)
         self.sum_squared_grads += curr_grad **2
-        updated_learning_rate = self.learning_rate / (torch.sqrt(self.sum_squared_grads) + self.delta)
+        updated_learning_rate = self.learning_rate / (torch.sqrt(self.sum_squared_grads) + self.delta) #square root of each gradient
         step = -updated_learning_rate * curr_grad
         return step
 
@@ -129,9 +129,19 @@ class RmsPropStepFunction:
         
     """
     def __init__(self, loss_gradient, learning_rate, decay_rate, delta=0.000001):
-        # Question FOUR
-        pass
+        self.loss_gradient = loss_gradient
+        self.learning_rate = learning_rate
+        self.decay_rate = decay_rate
+        self.delta = delta
+        self.moving_average = torch.tensor([1.0, 1.0])
+        self.first_step = True
         
     def __call__(self, pos):
-        # Question FOUR
-        pass
+        curr_grad = self.loss_gradient(pos)
+        if self.first_step:
+            step = -self.learning_rate * curr_grad
+        else:
+            self.moving_average = self.decay_rate * self.moving_average + (1-self.decay_rate) * (curr_grad ** 2)
+            step = - self.learning_rate /(torch.sqrt(self.moving_average + self.delta)) * curr_grad
+        self.first_step = False
+        return step
