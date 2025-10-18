@@ -29,7 +29,7 @@ def grad_descent(step_fn, env):
     the starting position) visited during the gradient descent. 
     
     """
-    positions = [env.curr_pos]
+    positions = [env.current_position()]
     while env.can_see_exit(env.current_position()) != True:
         step_to_take = step_fn(env.current_position())
         new_pos = step_to_take + env.current_position() 
@@ -94,12 +94,17 @@ class AdagradStepFunction:
         
     """
     def __init__(self, loss_gradient, learning_rate, delta = 0.0000001):
-        # Question THREE
-        pass
+        self.loss_gradient = loss_gradient
+        self.learning_rate = learning_rate
+        self.delta = delta
+        self.sum_squared_grads = torch.zeros(2)
         
     def __call__(self, pos):
-        # Question THREE
-        pass       
+        curr_grad = self.loss_gradient(pos)
+        self.sum_squared_grads += curr_grad **2
+        updated_learning_rate = self.learning_rate / (torch.sqrt(self.sum_squared_grads) + self.delta)
+        step = -updated_learning_rate * curr_grad
+        return step
 
 
 def rmsprop(rate, decay_rate, env):
