@@ -133,15 +133,13 @@ class RmsPropStepFunction:
         self.learning_rate = learning_rate
         self.decay_rate = decay_rate
         self.delta = delta
-        self.moving_average = torch.tensor([1.0, 1.0])
-        self.first_step = True
+        self.moving_average = None
         
     def __call__(self, pos):
         curr_grad = self.loss_gradient(pos)
-        if self.first_step:
-            step = -self.learning_rate * curr_grad
+        if self.moving_average is None:
+            self.moving_average = curr_grad ** 2  #start adapting immediately
         else:
             self.moving_average = self.decay_rate * self.moving_average + (1-self.decay_rate) * (curr_grad ** 2)
-            step = - self.learning_rate /(torch.sqrt(self.moving_average + self.delta)) * curr_grad
-        self.first_step = False
+        step = - self.learning_rate /torch.sqrt(self.moving_average + self.delta) * curr_grad
         return step
